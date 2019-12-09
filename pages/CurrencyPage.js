@@ -80,7 +80,7 @@ function CurrencyPage(parentElement) {
       coinName: "Chilean Peso",
       flag: "images/CLP_CHILE_PESO.svg"
     },
-    { name: "CNY", country: "", coinName: "", flag: "" },
+    { name: "CNY", country: "China", coinName: "Chinese Yuan", flag: "" },
     { name: "COP", country: "", coinName: "", flag: "" },
     { name: "CZK", country: "", coinName: "", flag: "" },
     { name: "DKK", country: "", coinName: "", flag: "" },
