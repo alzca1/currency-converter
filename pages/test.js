@@ -174,3 +174,12 @@ var currencies = [
     "VND",
     "ZAR"
   ]
+
+
+  function find(array, word){
+      return array.findIndex(i => i === word);
+  }
+
+
+
+  console.log(find(currencies,'USD'))

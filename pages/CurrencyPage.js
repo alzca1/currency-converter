@@ -1,10 +1,25 @@
 "use strict";
 
-var value = {
-  currencyOrigin: "USD",
-  currencyDestiny: "EUR",
-  amount: 0
-};
+var value = [
+  {
+    currencyOrigin: {
+      name: "USD",
+      country: "United States of America",
+      coinName: "US dollar",
+      flag: "images/USD_USA_DOLLAR.svg"
+    }
+  },
+  {
+    currencyDestiny: {
+      name: "EUR",
+      country: "European Union",
+      coinName: "Euro",
+      flag: "images/EUR_EUROPE_EURO.svg"
+    }
+  },
+
+  { amount: 0 }
+];
 
 function CurrencyPage(parentElement) {
   this.parentElement = parentElement;
@@ -129,53 +144,49 @@ function CurrencyPage(parentElement) {
     { name: "VND", country: "", coinName: "", flag: "" },
     { name: "ZAR", country: "", coinName: "", flag: "" }
   ];
-
 }
 
 CurrencyPage.prototype.build = function() {
   this.elements = `
     
     <header>
+    <div class="container text-center">
     <h1> Currency Converter </h1>
     <h5> Get your current currency conversion! </h5>
+    </div>
     </header>
 
     <main>
-    <div class="container m-2"> 
-    <label for="amount">
-    <input type="number" name="amount" id="currencyAmount">
-  </label>
-    <select id="currencyOrigin">`;
+    <form class="container p-3 w-50">
+    
+    <input class="form-control form-control-lg w-100" type="number" name="amount" id="currencyAmount">
+    
+   
+    <select class="mt-2 w-100"  id="currencyOrigin">`;
 
-    this.currencies.forEach(currency => {
-      this.elements+= `
-      <option value=${currency.name}> ${currency.coinName}</option>
-      `
-    })
-  // for (var x in currencies) {
-  //   this.elements += `
-  //    <option value=${x}>${currencies[x]}</option>
-  //    `;
-  
+  this.currencies.forEach(currency => {
+    this.elements += `
+      <option class="form-control" value=${currency.name}> ${currency.coinName} (${currency.name})</option>
+      `;
+  });
 
   this.elements += `
    </select>
-   <select id="currencyDestiny">`;
-   this.currencies.forEach(currency => {
-    this.elements+= `
-    <option value=${currency.name}> ${currency.coinName}</option>
-    `
-  })
+   <select class=" mt-3 w-100" id="currencyDestiny">`;
+  this.currencies.forEach(currency => {
+    this.elements += `
+    <option class="form-control " value=${currency.name}> ${currency.coinName} (${currency.name})</option>
+    `;
+  });
 
-  // for(var x in currencies) {
-  //   this.elements += `
-  //   <option value=${currencies[x]}>${currencies[x]}</option>
-  //   `;
-  // }
-  this.elements +=`
+  this.elements += `
   </select>
-   <button type="button" id="getValue">Get Value </button> 
-  <div class="currencyContainer"></div>
+  <div class="m-3 text-center">
+   <button class="btn btn-primary btn-lg mt-2 mx-auto" type="button" id="getValue">Get Value </button>
+   </div>
+   </form>
+
+  <div class="currencyContainer container"></div>
     `;
 
   this.inject();
@@ -189,9 +200,8 @@ CurrencyPage.prototype.inject = function(parentElement) {
 CurrencyPage.prototype.addListeners = function(parentElement) {
   var number = document.querySelector("#currencyAmount");
   var selectOrigin = document.querySelector("#currencyOrigin");
-  var selectDestiny = document.querySelector("#currencyDestiny")
+  var selectDestiny = document.querySelector("#currencyDestiny");
   var button = document.querySelector("#getValue");
-  
 
   number.addEventListener("change", this.getInputValue);
   selectOrigin.addEventListener("change", this.getInputValue);
@@ -200,41 +210,67 @@ CurrencyPage.prototype.addListeners = function(parentElement) {
 };
 
 CurrencyPage.prototype.getInputValue = function(event) {
-  
+  var page = new CurrencyPage();
   var result = event.target.value;
-  if(event.target.id === "currencyAmount"){
-    value.amount = result; 
-  }else if(event.target.id === "currencyOrigin"){
-    value.currencyOrigin = result; 
-  }else if(event.target.id === "currencyDestiny"){
-    value.currencyDestiny = result; 
+  var array = page.currencies;
+  var index = findIndex(result);
+
+  function findIndex(value) {
+    return array.findIndex(element => element.name === value);
   }
-  console.log(value)
+
+  if (event.target.id === "currencyAmount") {
+    value[2].amount = result;
+  } else if (event.target.id === "currencyOrigin") {
+    value[0].currencyOrigin = array[index];
+  } else if (event.target.id === "currencyDestiny") {
+    value[1].currencyDestiny = array[index];
+  }
+  console.log(value);
 };
 
 CurrencyPage.prototype.connectToApi = async function(parentElement) {
-  var connectionOrigin = await currencyServiceInstance.getCurrency(value.currencyOrigin);
+  var connectionOrigin = await currencyServiceInstance.getCurrency(
+    value[0].currencyOrigin.name
+  );
   var date = new Date(connectionOrigin.time_last_updated * 1000);
-  var localDate = date.toLocaleString({hour12:false});
+  var localDate = date.toLocaleString({ hour12: false });
   var coins = connectionOrigin.rates;
   var container = document.querySelector(".currencyContainer");
 
-
   this.currencyContainer = `
-  <article>
+  <article class="text-center">
   <span> <h5>Info last updated: ${localDate} </h5> </span>
-  <h5> Currency origin: ${connectionOrigin.base}</h5>
-  <h5> Currency destiny: ${value.currencyDestiny}</h5>
+  <div class="card-group w-75 p-5 mx-auto">
+  <div class="card"> 
+  <img class="img fluid card-img-top w-50 mx-auto" src="${value[0].currencyOrigin.flag}">
+  <div class="card-body text-center">
+  <h5 class="text-primary">  ORIGIN </h5> <br> <h4>${value[2].amount} ${value[0].currencyOrigin.name} </h4> <h5>${value[0].currencyOrigin.coinName}</h5>
+  </div>
+  
+  </div>
+  <div class="card"> 
+  <img class="img-fluid card-img-top w-50 mx-auto" src="${value[1].currencyDestiny.flag}">
+  <div class="card-body text-center">`;
+
+  for (var x in coins) {
+    if (
+      x !== value[0].currencyOrigin.name &&
+      x === value[1].currencyDestiny.name
+    ) {
+      this.currencyContainer += `
+
+  <h5 class="text-success">  DESTINY </h5> <br> <h4> ${coins[x].toFixed(3) *
+    value[2].amount} ${x} </h4> <h5>${value[1].currencyDestiny.coinName}</h5>
+  </div>
+  </div>
+  </div>
 
   `;
-  for (var x in coins) {
-    if (x !== value.currencyOrigin && x === value.currencyDestiny)  {
-      this.currencyContainer += `
-            <span> <h5>${value.amount} ${value.currencyOrigin} =</h5> <h4>${coins[x] * value.amount} ${x}<h4> </span>        
-            `;
     }
   }
   this.currencyContainer += "</article>";
 
   container.innerHTML = this.currencyContainer;
+  console.log(connectionOrigin);
 };
